@@ -1,343 +1,172 @@
-import { useState } from "react";
-import CalculatorButton from "../components/CalculatorButton"; // Nhúng Component nút bấm vào
+import useCalculator from "./useCalculator"; // Import phần logic từ file trên
+
+const Button = ({ children, onClick, className = "", variant = "default" }) => {
+	const baseStyle =
+		"flex items-center justify-center text-xl font-medium rounded shadow-sm border active:scale-95 transition-transform outline-none focus:outline-none";
+	const variants = {
+		default:
+			"bg-gradient-to-b from-gray-100 to-gray-300 border-gray-400 text-gray-800 hover:from-gray-200 hover:to-gray-400",
+		red: "bg-gradient-to-b from-red-500 to-red-700 border-red-800 text-white hover:from-red-600 hover:to-red-800",
+		dark: "bg-gradient-to-b from-gray-600 to-gray-800 border-gray-900 text-white hover:from-gray-700 hover:to-gray-900",
+		blue: "bg-gradient-to-b from-blue-400 to-blue-600 border-blue-700 text-white hover:from-blue-500 hover:to-blue-700",
+	};
+	return (
+		<button
+			onClick={onClick}
+			className={`${baseStyle} ${variants[variant]} ${className}`}
+		>
+			{children}
+		</button>
+	);
+};
 
 export default function Calculator() {
-	const [currentOperand, setCurrentOperand] = useState("0");
-	const [previousOperand, setPreviousOperand] = useState("");
-	const [operation, setOperation] = useState("");
-	const [overwrite, setOverwrite] = useState(true);
-	const [memory, setMemory] = useState(0);
-
-	const appendNumber = (number) => {
-		if (currentOperand.includes(".") && number === ".") return;
-		if (overwrite) {
-			setCurrentOperand(number === "." ? "0." : number);
-			setOverwrite(false);
-		} else {
-			if (currentOperand === "0" && number !== ".") {
-				setCurrentOperand(number);
-			} else {
-				setCurrentOperand(`${currentOperand}${number}`);
-			}
-		}
-	};
-
-	const chooseOperation = (op) => {
-		if (currentOperand === "") return;
-		if (previousOperand !== "") {
-			calculate();
-		}
-		setOperation(op);
-		setPreviousOperand(`${currentOperand} ${op}`);
-		setOverwrite(true);
-	};
-
-	const calculate = () => {
-		let cal;
-		const prev = parseFloat(previousOperand);
-		const current = parseFloat(currentOperand);
-
-		if (isNaN(prev) || isNaN(current)) return;
-
-		switch (operation) {
-			case "+":
-				cal = prev + current;
-				break;
-			case "-":
-				cal = prev - current;
-				break;
-			case "×":
-				cal = prev * current;
-				break;
-			case "÷":
-				if (current === 0) {
-					alert("Không thể chia cho 0!");
-					clear();
-					return;
-				}
-				cal = prev / current;
-				break;
-			default:
-				return;
-		}
-
-		setPreviousOperand(`${previousOperand} ${currentOperand} =`);
-		setCurrentOperand(String(cal));
-		setOperation("");
-		setOverwrite(true);
-	};
-
-	const clear = () => {
-		setCurrentOperand("0");
-		setPreviousOperand("");
-		setOperation("");
-		setOverwrite(true);
-	};
-
-	const clearEntry = () => {
-		setCurrentOperand("0");
-		setOverwrite(true);
-	};
-
-	const backspace = () => {
-		if (overwrite) return;
-		if (currentOperand.length === 1) {
-			setCurrentOperand("0");
-			setOverwrite(true);
-		} else {
-			setCurrentOperand(currentOperand.slice(0, -1));
-		}
-	};
-
-	const toggleSign = () => {
-		setCurrentOperand(String(parseFloat(currentOperand) * -1));
-	};
-
-	const calculateSingle = (op) => {
-		if (currentOperand === "") return;
-		const current = parseFloat(currentOperand);
-		if (isNaN(current)) return;
-
-		let result;
-		switch (op) {
-			case "1/x":
-				result = current === 0 ? "Lỗi" : 1 / current;
-				break;
-			case "x²":
-				result = current * current;
-				break;
-			case "√x":
-				result = current < 0 ? "Lỗi" : Math.sqrt(current);
-				break;
-			case "%":
-				result = current / 100;
-				break;
-			default:
-				return;
-		}
-		setCurrentOperand(String(result));
-		setOverwrite(true);
-	};
-
-	const handleMemory = (action) => {
-		const current = parseFloat(currentOperand) || 0;
-		switch (action) {
-			case "MC":
-				setMemory(0);
-				break;
-			case "MR":
-				setCurrentOperand(String(memory));
-				setOverwrite(true);
-				break;
-			case "M+":
-				setMemory(memory + current);
-				setOverwrite(true);
-				break;
-			case "M-":
-				setMemory(memory - current);
-				setOverwrite(true);
-				break;
-			case "MS":
-				setMemory(current);
-				setOverwrite(true);
-				break;
-			default:
-				return;
-		}
-	};
+	// Lấy toàn bộ dữ liệu logic từ Custom Hook ra để dùng
+	const {
+		expression,
+		display,
+		appendNumber,
+		appendDecimal,
+		appendOperator,
+		appendParenthesis,
+		calculateUnary,
+		calculate,
+		backspace,
+		clear,
+	} = useCalculator();
 
 	return (
-		<div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] bg-gray-50 p-4">
-			<div className="bg-[#f3f3f3] w-full max-w-sm rounded-lg shadow-2xl border border-gray-200 overflow-hidden text-gray-900 font-sans">
-				{/* Tiêu đề ứng dụng */}
-				<div className="flex justify-between items-center px-4 py-2 bg-[#f3f3f3]">
-					<div className="flex items-center gap-3">
-						<button className="text-gray-600 hover:text-black cursor-pointer">
-							<svg
-								className="w-5 h-5"
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth={2}
-									d="M4 6h16M4 12h16M4 18h16"
-								/>
-							</svg>
-						</button>
-						<h2 className="text-xl font-semibold">Standard</h2>
+		<div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4 font-sans">
+			<div className="w-full max-w-[340px] bg-white rounded-xl shadow-2xl border border-gray-300 p-4">
+				{/* Màn hình hiển thị */}
+				<div className="mb-4 bg-white border border-gray-300 rounded text-right shadow-inner px-3 py-2">
+					<div className="text-gray-500 text-sm h-5 tracking-wider overflow-hidden whitespace-nowrap text-ellipsis">
+						{expression}
 					</div>
-					<button className="text-gray-600 hover:text-black cursor-pointer">
-						<svg
-							className="w-5 h-5"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-						>
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								strokeWidth={2}
-								d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-							/>
-						</svg>
-					</button>
-				</div>
-
-				{/* Màn hình hiển thị kết quả */}
-				<div className="bg-[#f3f3f3] p-6 text-right border-b border-gray-200">
-					<div className="text-gray-600 text-sm h-6 overflow-hidden">
-						{previousOperand}
-					</div>
-					<div className="text-5xl font-bold h-16 overflow-hidden break-all">
-						{currentOperand}
+					<div className="text-4xl text-gray-800 overflow-hidden break-all h-10 flex items-center justify-end">
+						{display}
 					</div>
 				</div>
 
-				{/* Hàng nút chức năng Memory */}
-				<div className="grid grid-cols-6 gap-0.5 text-xs text-center py-1 bg-[#f3f3f3]">
-					{["MC", "MR", "M+", "M-", "MS", "M∨"].map((mem) => (
-						<button
-							key={mem}
-							className="py-2 text-gray-500 hover:bg-gray-200 font-medium rounded transition active:scale-95 disabled:opacity-50 cursor-pointer"
-							onClick={() => mem !== "M∨" && handleMemory(mem)}
-							disabled={mem === "M∨"}
-						>
-							{mem}
-						</button>
-					))}
-				</div>
+				{/* Lưới các nút bấm */}
+				<div className="grid grid-cols-4 gap-2">
+					<Button
+						className="h-12"
+						variant="default"
+						onClick={() => appendParenthesis("(")}
+					>
+						(
+					</Button>
+					<Button
+						className="h-12"
+						variant="default"
+						onClick={() => appendParenthesis(")")}
+					>
+						)
+					</Button>
+					<Button className="h-12" variant="red" onClick={backspace}>
+						←
+					</Button>
+					<Button className="h-12" variant="red" onClick={clear}>
+						CA
+					</Button>
 
-				{/* Lưới các nút bấm tính toán - Đã được làm sạch bằng component */}
-				<div className="grid grid-cols-4 gap-[2px] p-[2px] bg-gray-200">
-					{/* Hàng 1 */}
-					<CalculatorButton
-						variant="op"
-						onClick={() => calculateSingle("%")}
+					<Button
+						className="h-12"
+						variant="default"
+						onClick={() => calculateUnary("x²")}
+					>
+						x²
+					</Button>
+					<Button
+						className="h-12"
+						variant="default"
+						onClick={() => calculateUnary("√")}
+					>
+						√
+					</Button>
+					<Button
+						className="h-12"
+						variant="default"
+						onClick={() => calculateUnary("%")}
 					>
 						%
-					</CalculatorButton>
-					<CalculatorButton variant="op" onClick={clearEntry}>
-						CE
-					</CalculatorButton>
-					<CalculatorButton variant="op" onClick={clear}>
-						C
-					</CalculatorButton>
-					<CalculatorButton variant="op" onClick={backspace}>
-						<svg
-							className="w-5 h-5"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-						>
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								strokeWidth={2}
-								d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414A2 2 0 0010.828 19h7.172a2 2 0 002-2V7a2 2 0 00-2-2h-7.172a2 2 0 00-1.414.586L3 12z"
-							/>
-						</svg>
-					</CalculatorButton>
-
-					{/* Hàng 2 */}
-					<CalculatorButton
-						variant="op"
-						onClick={() => calculateSingle("1/x")}
-					>
-						<sup>1</sup>/<sub>x</sub>
-					</CalculatorButton>
-					<CalculatorButton
-						variant="op"
-						onClick={() => calculateSingle("x²")}
-					>
-						x<sup>2</sup>
-					</CalculatorButton>
-					<CalculatorButton
-						variant="op"
-						onClick={() => calculateSingle("√x")}
-					>
-						<sup>2</sup>√x
-					</CalculatorButton>
-					<CalculatorButton
-						variant="op"
-						className="text-2xl"
-						onClick={() => chooseOperation("÷")}
+					</Button>
+					<Button
+						className="h-12 text-2xl pb-1"
+						variant="dark"
+						onClick={() => appendOperator("÷")}
 					>
 						÷
-					</CalculatorButton>
+					</Button>
 
-					{/* Hàng 3 */}
-					<CalculatorButton onClick={() => appendNumber("7")}>
+					<Button className="h-12" onClick={() => appendNumber("7")}>
 						7
-					</CalculatorButton>
-					<CalculatorButton onClick={() => appendNumber("8")}>
+					</Button>
+					<Button className="h-12" onClick={() => appendNumber("8")}>
 						8
-					</CalculatorButton>
-					<CalculatorButton onClick={() => appendNumber("9")}>
+					</Button>
+					<Button className="h-12" onClick={() => appendNumber("9")}>
 						9
-					</CalculatorButton>
-					<CalculatorButton
-						variant="op"
-						className="text-2xl"
-						onClick={() => chooseOperation("×")}
+					</Button>
+					<Button
+						className="h-12 text-2xl pb-1"
+						variant="dark"
+						onClick={() => appendOperator("×")}
 					>
 						×
-					</CalculatorButton>
+					</Button>
 
-					{/* Hàng 4 */}
-					<CalculatorButton onClick={() => appendNumber("4")}>
+					<Button className="h-12" onClick={() => appendNumber("4")}>
 						4
-					</CalculatorButton>
-					<CalculatorButton onClick={() => appendNumber("5")}>
+					</Button>
+					<Button className="h-12" onClick={() => appendNumber("5")}>
 						5
-					</CalculatorButton>
-					<CalculatorButton onClick={() => appendNumber("6")}>
+					</Button>
+					<Button className="h-12" onClick={() => appendNumber("6")}>
 						6
-					</CalculatorButton>
-					<CalculatorButton
-						variant="op"
-						className="text-3xl"
-						onClick={() => chooseOperation("-")}
+					</Button>
+					<Button
+						className="h-12 text-3xl pb-2"
+						variant="dark"
+						onClick={() => appendOperator("-")}
 					>
 						-
-					</CalculatorButton>
+					</Button>
 
-					{/* Hàng 5 */}
-					<CalculatorButton onClick={() => appendNumber("1")}>
+					<Button className="h-12" onClick={() => appendNumber("1")}>
 						1
-					</CalculatorButton>
-					<CalculatorButton onClick={() => appendNumber("2")}>
+					</Button>
+					<Button className="h-12" onClick={() => appendNumber("2")}>
 						2
-					</CalculatorButton>
-					<CalculatorButton onClick={() => appendNumber("3")}>
+					</Button>
+					<Button className="h-12" onClick={() => appendNumber("3")}>
 						3
-					</CalculatorButton>
-					<CalculatorButton
-						variant="op"
-						className="text-2xl"
-						onClick={() => chooseOperation("+")}
+					</Button>
+					<Button
+						className="h-12 text-2xl pb-1"
+						variant="dark"
+						onClick={() => appendOperator("+")}
 					>
 						+
-					</CalculatorButton>
+					</Button>
 
-					{/* Hàng 6 */}
-					<CalculatorButton onClick={toggleSign}>
-						<sup>+</sup>/<sub>-</sub>
-					</CalculatorButton>
-					<CalculatorButton onClick={() => appendNumber("0")}>
+					<Button className="h-12" onClick={() => appendNumber("0")}>
 						0
-					</CalculatorButton>
-					<CalculatorButton
-						className="text-2xl"
-						onClick={() => appendNumber(".")}
+					</Button>
+					<Button
+						className="h-12 font-bold pb-2"
+						onClick={appendDecimal}
 					>
 						.
-					</CalculatorButton>
-					<CalculatorButton variant="equal" onClick={calculate}>
+					</Button>
+					<Button
+						className="col-span-2 h-12 text-2xl pb-1"
+						variant="blue"
+						onClick={calculate}
+					>
 						=
-					</CalculatorButton>
+					</Button>
 				</div>
 			</div>
 		</div>
