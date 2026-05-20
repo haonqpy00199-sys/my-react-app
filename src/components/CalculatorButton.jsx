@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 export default function CalculatorButton({
 	children,
 	onClick,
@@ -17,7 +19,9 @@ export default function CalculatorButton({
 
 	return (
 		<button
-			className={`${baseClass} ${variants[variant]} ${disabled ? "opacity-50 cursor-not-allowed" : ""} ${className}`}
+			className={`${baseClass} ${variants[variant]} ${
+				disabled ? "opacity-50 cursor-not-allowed" : ""
+			} ${className}`}
 			onClick={onClick}
 			disabled={disabled}
 		>
@@ -25,3 +29,12 @@ export default function CalculatorButton({
 		</button>
 	);
 }
+
+// Thêm Prop Validation để đảm bảo code đạt chuẩn chuyên nghiệp
+CalculatorButton.propTypes = {
+	children: PropTypes.node.isRequired,
+	onClick: PropTypes.func,
+	variant: PropTypes.oneOf(["num", "op", "equal"]),
+	disabled: PropTypes.bool,
+	className: PropTypes.string,
+};
