@@ -2,7 +2,7 @@ import { useState } from "react";
 
 export default function useCalculator() {
     const [input, setInput] = useState("");
-    // Lịch sử mẫu giống trong ảnh của bạn để dễ hình dung
+    // Lịch sử mẫu
     const [history, setHistory] = useState([
         { id: 1, expr: "2452 tan(125)", result: "-1917.612514" },
         { id: 2, expr: "551 × 9", result: "4959" },
@@ -16,6 +16,9 @@ export default function useCalculator() {
     };
 
     const clearAll = () => setInput("");
+
+    // Hàm xóa toàn bộ lịch sử
+    const clearHistory = () => setHistory([]);
 
     const backspace = () => {
         if (input === "Lỗi") setInput("");
@@ -74,6 +77,7 @@ export default function useCalculator() {
         isRad,
         insert,
         clearAll,
+        clearHistory,
         backspace,
         toggleRad,
         calculate,

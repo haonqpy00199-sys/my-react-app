@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import useCalculator from "../hooks/useCalculator";
-import CalculatorButton from "../components/CalculatorButton"; // Import component mới
+import CalculatorButton from "../components/CalculatorButton";
 
 export default function Calculator() {
 	const calc = useCalculator();
@@ -75,8 +75,11 @@ export default function Calculator() {
 						</span>
 					</div>
 					<button
-						onClick={calc.clearAll}
-						className="text-gray-500 hover:text-gray-800 cursor-pointer"
+						onClick={() => {
+							calc.clearAll();
+							calc.clearHistory();
+						}}
+						className="text-gray-500 hover:text-gray-800 cursor-pointer active:text-red-500 transition-colors"
 					>
 						xóa tất cả
 					</button>
