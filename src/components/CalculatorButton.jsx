@@ -1,40 +1,30 @@
 import PropTypes from "prop-types";
 
-export default function CalculatorButton({
-	children,
-	onClick,
-	variant = "num",
-	disabled = false,
-	className = "",
-}) {
-	const baseClass =
-		"p-4 rounded transition active:scale-95 flex items-center justify-center cursor-pointer";
+// Chúng ta đã thêm thuộc tính `className` vào danh sách nhận (Destructuring)
+function CalculatorButton({ label, onClick, className }) {
+	// Định nghĩa các style cốt lõi không thay đổi (Vị trí chữ, độ đậm, transition)
+	const baseStyles =
+		"text-white font-bold rounded-lg shadow-md transition cursor-pointer active:scale-95";
 
-	// Định nghĩa màu sắc theo loại nút
-	const variants = {
-		num: "bg-white hover:bg-gray-100 text-2xl font-normal", // Nút số (trắng)
-		op: "bg-[#f9f9f9] hover:bg-gray-100 text-xl font-light text-gray-800", // Nút phép toán (xám)
-		equal: "bg-[#0067c0] text-white hover:bg-[#005da9] text-3xl font-light", // Nút dấu = (xanh)
-	};
+	// Định nghĩa các style mặc định (Màu xanh) sẽ được dùng nếu KHÔNG truyền className vào
+	const defaultStyles = "bg-sky-500 hover:bg-sky-600 py-3 px-6";
 
 	return (
 		<button
-			className={`${baseClass} ${variants[variant]} ${
-				disabled ? "opacity-50 cursor-not-allowed" : ""
-			} ${className}`}
+			type="button"
 			onClick={onClick}
-			disabled={disabled}
+			// Kết hợp baseStyles với className truyền vào. Nếu không có className, dùng defaultStyles.
+			className={`${baseStyles} ${className ? className : defaultStyles}`}
 		>
-			{children}
+			{label}
 		</button>
 	);
 }
 
-// Thêm Prop Validation để đảm bảo code đạt chuẩn chuyên nghiệp
 CalculatorButton.propTypes = {
-	children: PropTypes.node.isRequired,
-	onClick: PropTypes.func,
-	variant: PropTypes.oneOf(["num", "op", "equal"]),
-	disabled: PropTypes.bool,
-	className: PropTypes.string,
+	label: PropTypes.string.isRequired,
+	onClick: PropTypes.func.isRequired,
+	className: PropTypes.string, // Đã thêm kiểm tra PropTypes cho className (Hợp lệ)
 };
+
+export default CalculatorButton;
