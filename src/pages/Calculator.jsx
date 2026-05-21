@@ -1,174 +1,235 @@
-import useCalculator from "./useCalculator"; // Import phần logic từ file trên
-
-const Button = ({ children, onClick, className = "", variant = "default" }) => {
-	const baseStyle =
-		"flex items-center justify-center text-xl font-medium rounded shadow-sm border active:scale-95 transition-transform outline-none focus:outline-none";
-	const variants = {
-		default:
-			"bg-gradient-to-b from-gray-100 to-gray-300 border-gray-400 text-gray-800 hover:from-gray-200 hover:to-gray-400",
-		red: "bg-gradient-to-b from-red-500 to-red-700 border-red-800 text-white hover:from-red-600 hover:to-red-800",
-		dark: "bg-gradient-to-b from-gray-600 to-gray-800 border-gray-900 text-white hover:from-gray-700 hover:to-gray-900",
-		blue: "bg-gradient-to-b from-blue-400 to-blue-600 border-blue-700 text-white hover:from-blue-500 hover:to-blue-700",
-	};
-	return (
-		<button
-			onClick={onClick}
-			className={`${baseStyle} ${variants[variant]} ${className}`}
-		>
-			{children}
-		</button>
-	);
-};
+import { useEffect } from "react";
+import useCalculator from "../hooks/useCalculator";
+import CalculatorButton from "../components/CalculatorButton";
 
 export default function Calculator() {
-	// Lấy toàn bộ dữ liệu logic từ Custom Hook ra để dùng
-	const {
-		expression,
-		display,
-		appendNumber,
-		appendDecimal,
-		appendOperator,
-		appendParenthesis,
-		calculateUnary,
-		calculate,
-		backspace,
-		clear,
-	} = useCalculator();
+	const calc = useCalculator();
+
+	// Tự động xóa trạng thái khi vừa vào trang
+	useEffect(() => {
+		calc.clearAll();
+		calc.memoryOperation("MC"); // Reset memory
+		calc.setHistory([]);
+	}, []);
+
+	// Định nghĩa các nhóm Style cho nút (CSS classes)
+	const baseBtn =
+		"rounded-lg text-white font-bold transition-all shadow-md active:scale-95";
+
+	// Nhóm nút số: Nền xám sẫm
+	const digitBtn = `${baseBtn} bg-[#363636] hover:bg-[#4d4d4d]`;
+
+	// Nhóm nút Memory (MC, MR, ...): Nền vàng, chữ tối, font nhỏ hơn
+	const specialBtn = `${baseBtn} bg-[#ccaa00] hover:bg-[#e6bf00] text-[#222] font-semibold text-xs py-2.5`;
+
+	// Nhóm nút Xóa (AC, Del): Nền đỏ
+	const deleteBtn = `${baseBtn} bg-[#e52e2e] hover:bg-[#ff4040]`;
+
+	// Nhóm nút Toán tử (Cơ bản, 1 ngôi, ±, %): Nền xanh Pro
+	const mathBtn = `${baseBtn} bg-[#007aff] hover:bg-[#1a8cff]`;
 
 	return (
-		<div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4 font-sans">
-			<div className="w-full max-w-[340px] bg-white rounded-xl shadow-2xl border border-gray-300 p-4">
-				{/* Màn hình hiển thị */}
-				<div className="mb-4 bg-white border border-gray-300 rounded text-right shadow-inner px-3 py-2">
-					<div className="text-gray-500 text-sm h-5 tracking-wider overflow-hidden whitespace-nowrap text-ellipsis">
-						{expression}
+		<div className="flex flex-col lg:flex-row gap-6 my-2">
+			{/* --- Calculator Main Area (Phần chính Máy tính) --- */}
+			<div className="flex-grow flex items-center justify-center p-2">
+				<div className="bg-[#2c2c2c] p-6 rounded-3xl shadow-xl w-full max-w-sm border border-[#444] transition-all hover:shadow-2xl">
+					{/* Display Area: Nền gradient tối, text trắng */}
+					<div className="bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] p-5 rounded-2xl text-right mb-6 shadow-inner border border-[#333]">
+						<div className="text-[#999] text-sm h-5 overflow-hidden text-ellipsis whitespace-nowrap font-mono tracking-tight">
+							{calc.expression}
+						</div>
+						<div className="text-white text-4xl font-extrabold tracking-tight h-12 overflow-hidden text-ellipsis mt-1 font-sans">
+							{calc.display === "Error"
+								? calc.error
+								: calc.display}
+						</div>
 					</div>
-					<div className="text-4xl text-gray-800 overflow-hidden break-all h-10 flex items-center justify-end">
-						{display}
+
+					{/* Button Grid - Sắp xếp đúng theo yêu cầu --- */}
+					<div className="grid grid-cols-4 gap-3">
+						{/* --- Memory Row --- */}
+						<CalculatorButton
+							label="MC"
+							onClick={() => calc.memoryOperation("MC")}
+							className={specialBtn}
+						/>
+						<CalculatorButton
+							label="MR"
+							onClick={() => calc.memoryOperation("MR")}
+							className={specialBtn}
+						/>
+						<CalculatorButton
+							label="M+"
+							onClick={() => calc.memoryOperation("M+")}
+							className={specialBtn}
+						/>
+						<CalculatorButton
+							label="M-"
+							onClick={() => calc.memoryOperation("M-")}
+							className={specialBtn}
+						/>
+
+						{/* --- Unary Operators (Immediate) --- */}
+						<CalculatorButton
+							label="x²"
+							onClick={() => calc.handleUnary("squared")}
+							className={mathBtn}
+						/>
+						<CalculatorButton
+							label="√"
+							onClick={() => calc.handleUnary("squareRoot")}
+							className={mathBtn}
+						/>
+						<CalculatorButton
+							label="1/x"
+							onClick={() => calc.handleUnary("reciprocal")}
+							className={mathBtn}
+						/>
+						<CalculatorButton
+							label="±"
+							onClick={() => calc.handleNegate()}
+							className={mathBtn}
+						/>
+
+						{/* --- Clear, Delete, Percent, Operators (Top) --- */}
+						<CalculatorButton
+							label="AC"
+							onClick={() => calc.clearAll()}
+							className={deleteBtn}
+						/>
+						<CalculatorButton
+							label="Del"
+							onClick={() => calc.clearLast()}
+							className={deleteBtn}
+						/>
+						<CalculatorButton
+							label="%"
+							onClick={() => calc.handlePercent()}
+							className={mathBtn}
+						/>
+						<CalculatorButton
+							label="÷"
+							onClick={() => calc.handleOperator("÷")}
+							className={mathBtn}
+						/>
+
+						{/* --- Digit Grid Part 1 --- */}
+						<CalculatorButton
+							label="7"
+							onClick={() => calc.appendDigit("7")}
+							className={digitBtn}
+						/>
+						<CalculatorButton
+							label="8"
+							onClick={() => calc.appendDigit("8")}
+							className={digitBtn}
+						/>
+						<CalculatorButton
+							label="9"
+							onClick={() => calc.appendDigit("9")}
+							className={digitBtn}
+						/>
+						<CalculatorButton
+							label="×"
+							onClick={() => calc.handleOperator("×")}
+							className={mathBtn}
+						/>
+
+						{/* --- Digit Grid Part 2 --- */}
+						<CalculatorButton
+							label="4"
+							onClick={() => calc.appendDigit("4")}
+							className={digitBtn}
+						/>
+						<CalculatorButton
+							label="5"
+							onClick={() => calc.appendDigit("5")}
+							className={digitBtn}
+						/>
+						<CalculatorButton
+							label="6"
+							onClick={() => calc.appendDigit("6")}
+							className={digitBtn}
+						/>
+						<CalculatorButton
+							label="-"
+							onClick={() => calc.handleOperator("-")}
+							className={mathBtn}
+						/>
+
+						{/* --- Digit Grid Part 3 --- */}
+						<CalculatorButton
+							label="1"
+							onClick={() => calc.appendDigit("1")}
+							className={digitBtn}
+						/>
+						<CalculatorButton
+							label="2"
+							onClick={() => calc.appendDigit("2")}
+							className={digitBtn}
+						/>
+						<CalculatorButton
+							label="3"
+							onClick={() => calc.appendDigit("3")}
+							className={digitBtn}
+						/>
+						<CalculatorButton
+							label="+"
+							onClick={() => calc.handleOperator("+")}
+							className={mathBtn}
+						/>
+
+						{/* --- Bottom Row (Zero, Dot, Equals) --- */}
+						<CalculatorButton
+							label="0"
+							onClick={() => calc.appendDigit("0")}
+							className={digitBtn}
+						/>
+						<CalculatorButton
+							label="."
+							onClick={() => calc.appendDigit(".")}
+							className={digitBtn}
+						/>
+						{/* Nút '=': Nền cam nổi bật, col-span-2 để chiếm 2 ô */}
+						<CalculatorButton
+							label="="
+							onClick={() => calc.handleEquals()}
+							className={`${baseBtn} col-span-2 bg-[#ff9500] hover:bg-[#ffaa33]`}
+						/>
 					</div>
-				</div>
-
-				{/* Lưới các nút bấm */}
-				<div className="grid grid-cols-4 gap-2">
-					<Button
-						className="h-12"
-						variant="default"
-						onClick={() => appendParenthesis("(")}
-					>
-						(
-					</Button>
-					<Button
-						className="h-12"
-						variant="default"
-						onClick={() => appendParenthesis(")")}
-					>
-						)
-					</Button>
-					<Button className="h-12" variant="red" onClick={backspace}>
-						←
-					</Button>
-					<Button className="h-12" variant="red" onClick={clear}>
-						CA
-					</Button>
-
-					<Button
-						className="h-12"
-						variant="default"
-						onClick={() => calculateUnary("x²")}
-					>
-						x²
-					</Button>
-					<Button
-						className="h-12"
-						variant="default"
-						onClick={() => calculateUnary("√")}
-					>
-						√
-					</Button>
-					<Button
-						className="h-12"
-						variant="default"
-						onClick={() => calculateUnary("%")}
-					>
-						%
-					</Button>
-					<Button
-						className="h-12 text-2xl pb-1"
-						variant="dark"
-						onClick={() => appendOperator("÷")}
-					>
-						÷
-					</Button>
-
-					<Button className="h-12" onClick={() => appendNumber("7")}>
-						7
-					</Button>
-					<Button className="h-12" onClick={() => appendNumber("8")}>
-						8
-					</Button>
-					<Button className="h-12" onClick={() => appendNumber("9")}>
-						9
-					</Button>
-					<Button
-						className="h-12 text-2xl pb-1"
-						variant="dark"
-						onClick={() => appendOperator("×")}
-					>
-						×
-					</Button>
-
-					<Button className="h-12" onClick={() => appendNumber("4")}>
-						4
-					</Button>
-					<Button className="h-12" onClick={() => appendNumber("5")}>
-						5
-					</Button>
-					<Button className="h-12" onClick={() => appendNumber("6")}>
-						6
-					</Button>
-					<Button
-						className="h-12 text-3xl pb-2"
-						variant="dark"
-						onClick={() => appendOperator("-")}
-					>
-						-
-					</Button>
-
-					<Button className="h-12" onClick={() => appendNumber("1")}>
-						1
-					</Button>
-					<Button className="h-12" onClick={() => appendNumber("2")}>
-						2
-					</Button>
-					<Button className="h-12" onClick={() => appendNumber("3")}>
-						3
-					</Button>
-					<Button
-						className="h-12 text-2xl pb-1"
-						variant="dark"
-						onClick={() => appendOperator("+")}
-					>
-						+
-					</Button>
-
-					<Button className="h-12" onClick={() => appendNumber("0")}>
-						0
-					</Button>
-					<Button
-						className="h-12 font-bold pb-2"
-						onClick={appendDecimal}
-					>
-						.
-					</Button>
-					<Button
-						className="col-span-2 h-12 text-2xl pb-1"
-						variant="blue"
-						onClick={calculate}
-					>
-						=
-					</Button>
 				</div>
 			</div>
+
+			{/* --- Calculation History (Ghi lại lịch sử) --- */}
+			<aside className="lg:w-1/3 bg-white p-6 rounded-xl shadow-sm border border-gray-100 max-h-[500px] overflow-y-auto">
+				<div className="flex justify-between items-center mb-5 border-b border-gray-100 pb-3">
+					<h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+						📜 Lịch sử tính toán
+					</h3>
+					<button
+						onClick={() => calc.setHistory([])}
+						className="text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 px-3 py-1 rounded-full border border-blue-100 hover:border-blue-200"
+					>
+						Xóa tất cả
+					</button>
+				</div>
+				{calc.history.length === 0 ? (
+					<p className="text-gray-500 text-sm text-center py-8 font-serif">
+						Chưa có phép tính nào.
+					</p>
+				) : (
+					<ul className="space-y-3 font-mono text-xs">
+						{[...calc.history].reverse().map((item, index) => (
+							<li
+								key={index}
+								className="bg-gray-50 p-3 rounded-md border border-gray-100 text-gray-800 break-all leading-relaxed shadow-inner"
+							>
+								{item}
+							</li>
+						))}
+					</ul>
+				)}
+			</aside>
 		</div>
 	);
 }
