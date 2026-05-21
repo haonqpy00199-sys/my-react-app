@@ -109,6 +109,7 @@ export default function useCalculator() {
 
     return {
         input,
+        setInput,
         history,
         isRad,
         insert,

@@ -41,10 +41,23 @@ export default function Calculator() {
 
 			{/* --- Ô NHẬP LIỆU (ACTIVE INPUT) --- */}
 			<div className="px-1 py-1 bg-white">
-				<div className="border-[2.5px] border-[#3b82f6] h-[68px] flex items-center px-4 text-[22px] font-serif text-gray-800 bg-blue-50/20">
-					{calc.input}
-					<span className="w-[1.5px] h-8 bg-blue-500 animate-pulse ml-1 inline-block"></span>
-				</div>
+				<input
+					type="text"
+					value={calc.input}
+					onChange={(e) => calc.setInput(e.target.value)}
+					onKeyDown={(e) => {
+						// Tự động tính toán khi người dùng bấm phím Enter
+						if (e.key === "Enter") {
+							e.preventDefault();
+							calc.calculate();
+						}
+					}}
+					placeholder="Nhập biểu thức..."
+					className="w-full border-[2.5px] border-[#3b82f6] focus:border-[#2563eb] h-[68px] px-4 text-[22px] font-serif text-gray-800 bg-blue-50/20 outline-none rounded-[2px] transition-colors shadow-inner"
+					autoFocus // Tự động trỏ chuột vào ô này khi vừa vào trang
+					autoComplete="off"
+					spellCheck="false"
+				/>
 			</div>
 
 			{/* --- THANH CÔNG CỤ (TOOLBAR CÓ TAB) --- */}

@@ -6,7 +6,7 @@ export default function CalculatorButton({
 	colSpan = 1,
 	variant = "white",
 }) {
-	// Base styles: Căn giữa, bo góc nhẹ, hiệu ứng bấm nảy phím
+	// Base styles: Căn giữa, bo góc nhẹ, hiệu ứng bấm nảy phím giống máy tính GeoGebra
 	const baseStyles =
 		"h-[52px] flex items-center justify-center rounded-[4px] cursor-pointer transition-all duration-75 border shadow-[0_1px_2px_rgba(0,0,0,0.1)] active:translate-y-[1px] active:shadow-none font-medium select-none";
 
