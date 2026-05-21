@@ -6,14 +6,16 @@ export default function CalculatorButton({
 	colSpan = 1,
 	variant = "white",
 }) {
+	// Base styles: Căn giữa, bo góc nhẹ, hiệu ứng bấm nảy phím
 	const baseStyles =
-		"h-12 flex items-center justify-center rounded cursor-pointer transition-colors border border-gray-200/60 shadow-sm active:translate-y-px active:shadow-none text-lg select-none";
+		"h-[52px] flex items-center justify-center rounded-[4px] cursor-pointer transition-all duration-75 border shadow-[0_1px_2px_rgba(0,0,0,0.1)] active:translate-y-[1px] active:shadow-none font-medium select-none";
 
+	// Bảng màu cho từng loại phím (Trắng, Xám nhạt, Xám đậm, Xanh)
 	const variants = {
-		white: "bg-white text-gray-800 hover:bg-gray-100 font-serif",
-		gray: "bg-[#d9d9d9] text-gray-800 hover:bg-[#cccccc]",
-		dark: "bg-[#b8b8b8] text-gray-800 hover:bg-[#a0a0a0]",
-		blue: "bg-[#2b6cb0] text-white hover:bg-[#255a92] text-2xl",
+		white: "bg-white text-gray-800 border-gray-200 hover:bg-gray-50 font-serif text-[1.1rem]",
+		gray: "bg-[#e5e7eb] text-gray-800 border-gray-300 hover:bg-[#d1d5db] text-xl font-normal",
+		dark: "bg-[#9ca3af] text-gray-900 border-gray-400 hover:bg-[#6b7280] hover:text-white text-xl",
+		blue: "bg-[#3b82f6] text-white border-blue-600 hover:bg-[#2563eb] text-3xl font-light",
 	};
 
 	return (
@@ -29,6 +31,7 @@ export default function CalculatorButton({
 	);
 }
 
+// Bắt buộc xác thực kiểu dữ liệu để code chuyên nghiệp hơn
 CalculatorButton.propTypes = {
 	children: PropTypes.node.isRequired,
 	onClick: PropTypes.func.isRequired,
