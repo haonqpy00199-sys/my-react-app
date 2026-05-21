@@ -1,13 +1,14 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Navbar from "./components/Navbar"; // Import Navbar
+import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Calculator from "./pages/Calculator";
 
 export default function App() {
 	return (
-		<Router>
+		// Thêm thuộc tính basename với giá trị là tên repository của bạn
+		<Router basename="/my-react-app">
 			<div className="min-h-screen flex flex-col">
-				<Navbar /> {/* Gọi Navbar ở đây */}
+				<Navbar />
 				<main className="flex-grow">
 					<Routes>
 						<Route path="/" element={<Home />} />
