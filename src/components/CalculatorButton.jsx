@@ -1,30 +1,37 @@
 import PropTypes from "prop-types";
 
-// Chúng ta đã thêm thuộc tính `className` vào danh sách nhận (Destructuring)
-function CalculatorButton({ label, onClick, className }) {
-	// Định nghĩa các style cốt lõi không thay đổi (Vị trí chữ, độ đậm, transition)
+export default function CalculatorButton({
+	children,
+	onClick,
+	colSpan = 1,
+	variant = "white",
+}) {
 	const baseStyles =
-		"text-white font-bold rounded-lg shadow-md transition cursor-pointer active:scale-95";
+		"h-12 flex items-center justify-center rounded cursor-pointer transition-colors border border-gray-200/60 shadow-sm active:translate-y-px active:shadow-none text-lg select-none";
 
-	// Định nghĩa các style mặc định (Màu xanh) sẽ được dùng nếu KHÔNG truyền className vào
-	const defaultStyles = "bg-sky-500 hover:bg-sky-600 py-3 px-6";
+	const variants = {
+		white: "bg-white text-gray-800 hover:bg-gray-100 font-serif",
+		gray: "bg-[#d9d9d9] text-gray-800 hover:bg-[#cccccc]",
+		dark: "bg-[#b8b8b8] text-gray-800 hover:bg-[#a0a0a0]",
+		blue: "bg-[#2b6cb0] text-white hover:bg-[#255a92] text-2xl",
+	};
 
 	return (
 		<button
 			type="button"
 			onClick={onClick}
-			// Kết hợp baseStyles với className truyền vào. Nếu không có className, dùng defaultStyles.
-			className={`${baseStyles} ${className ? className : defaultStyles}`}
+			className={`${baseStyles} ${variants[variant]} ${
+				colSpan === 2 ? "col-span-2" : "col-span-1"
+			}`}
 		>
-			{label}
+			{children}
 		</button>
 	);
 }
 
 CalculatorButton.propTypes = {
-	label: PropTypes.string.isRequired,
+	children: PropTypes.node.isRequired,
 	onClick: PropTypes.func.isRequired,
-	className: PropTypes.string, // Đã thêm kiểm tra PropTypes cho className (Hợp lệ)
+	colSpan: PropTypes.number,
+	variant: PropTypes.oneOf(["white", "gray", "dark", "blue"]),
 };
-
-export default CalculatorButton;

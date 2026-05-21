@@ -10,7 +10,7 @@ export default function Home() {
 			title: "Giai đoạn 1: Nắm vững nền tảng (Prerequisites) ",
 			desc: "Trước khi chạm vào React, bạn cần chắc chắn mình đã làm chủ JavaScript, đặc biệt là các cú pháp hiện đại (ES6+), vì React sử dụng chúng rất nhiều. ",
 			details: [
-				"HTML/CSS: Nắm vững cấu trúc DOM, Flexbox, Grid và Responsive Design. [cite: 4]",
+				"HTML/CSS: Nắm vững cấu trúc DOM, Flexbox, Grid và Responsive Design.",
 				"Khai báo biến: let, const. ",
 				"Arrow Functions (Hàm mũi tên). ",
 				"Template Literals (Chuỗi mẫu). ",
