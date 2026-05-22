@@ -1,1 +1,11 @@
 @import "tailwindcss";
+
+/* Định nghĩa variant dark mode theo class cho Tailwind v4 */
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+    /* Nếu bạn có cấu hình thêm font chữ hoặc mã màu riêng thì viết ở đây */
+    --font-serif: "Times New Roman", Times, serif;
+}
+
+/* Các đoạn code CSS tùy chỉnh khác của bạn ở phía dưới (nếu có) giữ nguyên */
