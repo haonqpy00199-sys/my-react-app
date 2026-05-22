@@ -7,5 +7,6 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
-  base: "/my-react-app/", // THÊM DÒNG NÀY (Đúng tên repo của bạn)
+  // Đường dẫn base bắt buộc phải khớp với tên Repository của bạn trên GitHub
+  base: "/my-react-app/",
 })

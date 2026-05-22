@@ -5,7 +5,7 @@ import Calculator from "./pages/Calculator";
 
 export default function App() {
 	return (
-		<Router basename="/my-react-app">
+		<Router>
 			{/* Thêm dark:bg-[#121212] và dark:text-gray-200 để đổi màu nền và chữ toàn trang */}
 			<div className="min-h-screen flex flex-col bg-gray-50 dark:bg-[#121212] font-sans text-gray-800 dark:text-gray-200 transition-colors duration-300">
 				{/* 1. HEADER CHÍNH */}
