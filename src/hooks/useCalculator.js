@@ -1,91 +1,88 @@
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 export default function useCalculator() {
     const [input, setInput] = useState("");
-    const [history, setHistory] = useState([
 
-    ]);
-    const [isRad, setIsRad] = useState(false);
+    // 1. Khởi tạo history: Đọc từ localStorage, nếu trống thì dùng mảng rỗng
+    const [history, setHistory] = useState(() => {
+        const savedHistory = localStorage.getItem("calc_history");
+        return savedHistory ? JSON.parse(savedHistory) : [];
+    });
+
+    // 2. Khởi tạo isRad: Đọc từ localStorage để nhớ chế độ RAD/DEG
+    const [isRad, setIsRad] = useState(() => {
+        const savedRad = localStorage.getItem("calc_isRad");
+        return savedRad === "true";
+    });
+
     const [ans, setAns] = useState("10");
 
-    const insert = (val) => {
-        if (input === "Lỗi") setInput(val);
-        else setInput((prev) => prev + val);
-    };
+    // ==========================================
+    // 3. TỰ ĐỘNG LƯU DỮ LIỆU (PERSISTENCE)
+    // ==========================================
 
-    const clearAll = () => setInput("");
-    const clearHistory = () => setHistory([]);
-    const backspace = () => {
-        if (input === "Lỗi") setInput("");
-        else setInput((prev) => prev.slice(0, -1));
-    };
-    const toggleRad = () => setIsRad(!isRad);
+    // Lưu lịch sử mỗi khi có phép tính mới hoặc bị xóa
+    useEffect(() => {
+        localStorage.setItem("calc_history", JSON.stringify(history));
+    }, [history]);
 
-    const calculate = () => {
+    // Lưu trạng thái RAD/DEG mỗi khi người dùng chuyển đổi
+    useEffect(() => {
+        localStorage.setItem("calc_isRad", String(isRad));
+    }, [isRad]);
+
+    // ==========================================
+    // 4. CÁC HÀM XỬ LÝ ĐƯỢC TỐI ƯU (USECALLBACK)
+    // ==========================================
+
+    const insert = useCallback((val) => {
+        setInput((prev) => (prev === "Lỗi" ? val : prev + val));
+    }, []);
+
+    const clearAll = useCallback(() => setInput(""), []);
+    const clearHistory = useCallback(() => setHistory([]), []);
+
+    const backspace = useCallback(() => {
+        setInput((prev) => (prev === "Lỗi" ? "" : prev.slice(0, -1)));
+    }, []);
+
+    const toggleRad = useCallback(() => setIsRad((prev) => !prev), []);
+
+    const calculate = useCallback(() => {
         if (!input.trim()) return;
 
         try {
-            // 1. Tiền xử lý chuỗi: Đổi ký hiệu UI sang ký hiệu Toán học chuẩn
+            // Tiền xử lý chuỗi
             let str = input
-                .replace(/×/g, "*")
-                .replace(/÷/g, "/")
-                .replace(/%/g, "/100")
-                .replace(/ans/g, `(${ans})`)
-                .replace(/π/g, "PI")
-                .replace(/√/g, "sqrt")
-                .replace(/\^/g, "**");
+                .replace(/×/g, "*").replace(/÷/g, "/")
+                .replace(/%/g, "/100").replace(/ans/g, `(${ans})`)
+                .replace(/π/g, "PI").replace(/√/g, "sqrt").replace(/\^/g, "**");
 
-            // 2. Tự động chèn dấu nhân ẩn (VD: 2PI -> 2*PI, 5sin -> 5*sin, 3(2) -> 3*(2))
+            // Thêm dấu nhân ẩn
             str = str.replace(/(\d+)(PI|e|sin|cos|tan|arcsin|arccos|arctan|ln|log|abs|round|mean|stdev|stdevp|nPr|nCr|sqrt|\()/g, "$1*$2");
             str = str.replace(/\)(\d+|PI|e|sin|cos|tan|sqrt)/g, ")*$1");
 
-            // 3. Xử lý Giai thừa (!) cơ bản cho số nguyên
+            // Xử lý Giai thừa
             str = str.replace(/(\d+)!/g, "fact($1)");
 
-            // 4. Tạo bối cảnh (Context) chứa các hàm Toán học nâng cao
             const toRad = (x) => (isRad ? x : x * (Math.PI / 180));
             const fromRad = (x) => (isRad ? x : x * (180 / Math.PI));
 
+            // Bộ Context Toán học
             const mathContext = {
-                PI: Math.PI,
-                e: Math.E,
-                abs: Math.abs,
-                round: Math.round,
-                sqrt: Math.sqrt,
-                ln: Math.log,
-                log: Math.log10,
-
-                // Lượng giác (Tự động thích ứng RAD / DEG)
-                sin: (x) => Math.sin(toRad(x)),
-                cos: (x) => Math.cos(toRad(x)),
-                tan: (x) => Math.tan(toRad(x)),
-                arcsin: (x) => fromRad(Math.asin(x)),
-                arccos: (x) => fromRad(Math.acos(x)),
-                arctan: (x) => fromRad(Math.atan(x)),
-
-                // Xác suất thống kê
-                fact: (n) => {
-                    let res = 1;
-                    for (let i = 2; i <= Math.floor(n); i++) res *= i;
-                    return res;
-                },
+                PI: Math.PI, e: Math.E, abs: Math.abs, round: Math.round, sqrt: Math.sqrt, ln: Math.log, log: Math.log10,
+                sin: (x) => Math.sin(toRad(x)), cos: (x) => Math.cos(toRad(x)), tan: (x) => Math.tan(toRad(x)),
+                arcsin: (x) => fromRad(Math.asin(x)), arccos: (x) => fromRad(Math.acos(x)), arctan: (x) => fromRad(Math.atan(x)),
+                fact: (n) => { let res = 1; for (let i = 2; i <= Math.floor(n); i++) res *= i; return res; },
                 nPr: function (n, r) { return this.fact(n) / this.fact(n - r); },
                 nCr: function (n, r) { return this.fact(n) / (this.fact(r) * this.fact(n - r)); },
-
-                // Thống kê (Mean, Stdev)
                 mean: (...args) => args.reduce((a, b) => a + b, 0) / args.length,
-                stdev: function (...args) {
-                    const m = this.mean(...args);
-                    return Math.sqrt(args.reduce((sq, n) => sq + Math.pow(n - m, 2), 0) / (args.length - 1 || 1));
-                },
-                stdevp: function (...args) {
-                    const m = this.mean(...args);
-                    return Math.sqrt(args.reduce((sq, n) => sq + Math.pow(n - m, 2), 0) / args.length);
-                },
+                stdev: function (...args) { const m = this.mean(...args); return Math.sqrt(args.reduce((sq, n) => sq + Math.pow(n - m, 2), 0) / (args.length - 1 || 1)); },
+                stdevp: function (...args) { const m = this.mean(...args); return Math.sqrt(args.reduce((sq, n) => sq + Math.pow(n - m, 2), 0) / args.length); },
                 nroot: (n, x) => Math.pow(x, 1 / n),
             };
 
-            // 5. Thực thi tính toán an toàn qua new Function
+            // Thực thi tính toán an toàn
             const argNames = Object.keys(mathContext);
             const argValues = Object.values(mathContext);
             const executor = new Function(...argNames, `return ${str};`);
@@ -93,32 +90,20 @@ export default function useCalculator() {
 
             if (!isFinite(resultVal) || isNaN(resultVal)) throw new Error("Invalid");
 
-            // Làm tròn đẹp mắt (tối đa 8 chữ số thập phân)
-            const finalResult = Number.isInteger(resultVal)
-                ? String(resultVal)
-                : parseFloat(resultVal.toFixed(8)).toString();
+            // Làm tròn đẹp mắt
+            const finalResult = Number.isInteger(resultVal) ? String(resultVal) : parseFloat(resultVal.toFixed(8)).toString();
 
-            setHistory([...history, { id: Date.now(), expr: input, result: finalResult }]);
+            // Cập nhật state (useEffect sẽ tự động bắt sự thay đổi này và lưu vào localStorage)
+            setHistory((prevHistory) => [...prevHistory, { id: Date.now(), expr: input, result: finalResult }]);
             setAns(finalResult);
             setInput("");
         } catch (error) {
             setInput("Lỗi");
             setTimeout(() => setInput(""), 1500);
         }
-    };
+    }, [input, ans, isRad]);
 
     return {
-        input,
-        setInput,
-        history,
-        isRad,
-        insert,
-        clearAll,
-        clearHistory,
-        backspace,
-        toggleRad,
-        calculate,
+        input, setInput, history, isRad, insert, clearAll, clearHistory, backspace, toggleRad, calculate,
     };
 }
-
-// cap nhat file
