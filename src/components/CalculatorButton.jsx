@@ -1,40 +1,41 @@
+import { memo } from "react";
 import PropTypes from "prop-types";
 
-export default function CalculatorButton({
+// Sử dụng memo() bao bọc toàn bộ component
+const CalculatorButton = memo(function CalculatorButton({
 	children,
 	onClick,
-	variant = "num",
-	disabled = false,
-	className = "",
+	colSpan = 1,
+	variant = "white",
 }) {
-	const baseClass =
-		"p-4 rounded transition active:scale-95 flex items-center justify-center cursor-pointer";
+	const baseStyles =
+		"h-[52px] flex items-center justify-center rounded-[4px] cursor-pointer transition-all duration-75 border shadow-[0_1px_2px_rgba(0,0,0,0.1)] active:translate-y-[1px] active:shadow-none font-medium select-none";
 
-	// Định nghĩa màu sắc theo loại nút
 	const variants = {
-		num: "bg-white hover:bg-gray-100 text-2xl font-normal", // Nút số (trắng)
-		op: "bg-[#f9f9f9] hover:bg-gray-100 text-xl font-light text-gray-800", // Nút phép toán (xám)
-		equal: "bg-[#0067c0] text-white hover:bg-[#005da9] text-3xl font-light", // Nút dấu = (xanh)
+		white: "bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 font-serif text-[1.1rem]",
+		gray: "bg-[#e5e7eb] dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-[#d1d5db] dark:hover:bg-gray-600 text-xl font-normal",
+		dark: "bg-[#9ca3af] dark:bg-gray-600 text-gray-900 dark:text-gray-100 border-gray-400 dark:border-gray-500 hover:bg-[#6b7280] dark:hover:bg-gray-500 hover:text-white text-xl",
+		blue: "bg-[#3b82f6] text-white border-blue-600 hover:bg-[#2563eb] text-3xl font-light",
 	};
 
 	return (
 		<button
-			className={`${baseClass} ${variants[variant]} ${
-				disabled ? "opacity-50 cursor-not-allowed" : ""
-			} ${className}`}
+			type="button"
 			onClick={onClick}
-			disabled={disabled}
+			className={`${baseStyles} ${variants[variant]} ${
+				colSpan === 2 ? "col-span-2" : "col-span-1"
+			}`}
 		>
 			{children}
 		</button>
 	);
-}
+});
 
-// Thêm Prop Validation để đảm bảo code đạt chuẩn chuyên nghiệp
 CalculatorButton.propTypes = {
 	children: PropTypes.node.isRequired,
-	onClick: PropTypes.func,
-	variant: PropTypes.oneOf(["num", "op", "equal"]),
-	disabled: PropTypes.bool,
-	className: PropTypes.string,
+	onClick: PropTypes.func.isRequired,
+	colSpan: PropTypes.number,
+	variant: PropTypes.oneOf(["white", "gray", "dark", "blue"]),
 };
+
+export default CalculatorButton;
